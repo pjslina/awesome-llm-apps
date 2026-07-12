@@ -19,7 +19,16 @@ cd awesome-llm-apps/ai_agent_tutorials/ai_travel_agent
 2. Install the required dependencies:
 
 ```bash
+# 在项目目录下创建虚拟环境
+python -m venv .venv
+
+# 激活虚拟环境
+.\.venv\Scripts\Activate.ps1
+
+# 在虚拟环境中安装依赖
 pip install -r requirements.txt
+
+python.exe -m pip install --upgrade pip
 ```
 3. Get your OpenAI API Key
 

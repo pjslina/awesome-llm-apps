@@ -66,17 +66,19 @@ st.caption("Plan your next adventure with AI Travel Planner by researching and p
 if 'itinerary' not in st.session_state:
     st.session_state.itinerary = None
 
-# Get OpenAI API key from user
-openai_api_key = st.text_input("Enter OpenAI API Key to access GPT-4o", type="password")
+# Get DashScope API key from user
+dashscope_api_key = st.text_input("Enter DashScope (百炼) API Key", type="password")
 
 # Get SerpAPI key from the user
 serp_api_key = st.text_input("Enter Serp API Key for Search functionality", type="password")
 
-if openai_api_key and serp_api_key:
+if dashscope_api_key and serp_api_key:
+    DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
     researcher = Agent(
         name="Researcher",
         role="Searches for travel destinations, activities, and accommodations based on user preferences",
-        model=OpenAIChat(id="gpt-4o", api_key=openai_api_key),
+        model=OpenAIChat(id="deepseek-v4-flash", api_key=dashscope_api_key, base_url=DASHSCOPE_BASE_URL, role_map={"system": "system", "user": "user", "assistant": "assistant", "tool": "tool", "model": "assistant"}),
         description=dedent(
             """\
         You are a world-class travel researcher. Given a travel destination and the number of days the user wants to travel for,
@@ -96,7 +98,7 @@ if openai_api_key and serp_api_key:
     planner = Agent(
         name="Planner",
         role="Generates a draft itinerary based on user preferences and research results",
-        model=OpenAIChat(id="gpt-4o", api_key=openai_api_key),
+        model=OpenAIChat(id="deepseek-v4-flash", api_key=dashscope_api_key, base_url=DASHSCOPE_BASE_URL, role_map={"system": "system", "user": "user", "assistant": "assistant", "tool": "tool", "model": "assistant"}),
         description=dedent(
             """\
         You are a senior travel planner. Given a travel destination, the number of days the user wants to travel for, and a list of research results,
