@@ -36,8 +36,20 @@ An AI data analysis Agent built using the Agno Agent framework and Openai's gpt-
    git clone https://github.com/Shubhamsaboo/awesome-llm-apps.git
    cd awesome-llm-apps/starter_ai_agents/ai_data_analysis_agent
 
-   # Install dependencies
-   pip install -r requirements.txt
+   # 在项目目录下创建虚拟环境
+    python -m venv .venv
+    
+    # 激活虚拟环境
+    .\.venv\Scripts\Activate.ps1
+    
+    # 在虚拟环境中安装依赖
+    pip install -r requirements.txt
+    
+    python.exe -m pip install --upgrade pip
+   
+    # 使用阿里云镜像源
+    pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+    pip config set global.trusted-host mirrors.aliyun.com
    ```
 
 2. **Configure API Keys**

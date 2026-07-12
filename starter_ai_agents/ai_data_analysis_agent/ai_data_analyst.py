@@ -2,10 +2,15 @@ import tempfile
 import csv
 import streamlit as st
 import pandas as pd
+import logging
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.duckdb import DuckDbTools
 from agno.tools.pandas import PandasTools
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Function to preprocess and save the uploaded file
 def preprocess_and_save(file):
@@ -51,17 +56,17 @@ st.title("📊 Data Analyst Agent")
 # Sidebar for API keys
 with st.sidebar:
     st.header("API Keys")
-    openai_key = st.text_input("Enter your OpenAI API key:", type="password")
-    if openai_key:
-        st.session_state.openai_key = openai_key
+    dashscope_key = st.text_input("Enter your DashScope (百炼) API key:", type="password")
+    if dashscope_key:
+        st.session_state.dashscope_key = dashscope_key
         st.success("API key saved!")
     else:
-        st.warning("Please enter your OpenAI API key to proceed.")
+        st.warning("Please enter your DashScope (百炼) API key to proceed.")
 
 # File upload widget
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
-if uploaded_file is not None and "openai_key" in st.session_state:
+if uploaded_file is not None and "dashscope_key" in st.session_state:
     # Preprocess and save the uploaded file
     temp_path, columns, df = preprocess_and_save(uploaded_file)
     
@@ -83,8 +88,9 @@ if uploaded_file is not None and "openai_key" in st.session_state:
         )
         
         # Initialize the Agent with DuckDB and Pandas tools
+        DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
         data_analyst_agent = Agent(
-            model=OpenAIChat(id="gpt-4o", api_key=st.session_state.openai_key),
+            model=OpenAIChat(id="deepseek-v4-flash", api_key=st.session_state.dashscope_key, base_url=DASHSCOPE_BASE_URL, role_map={"system": "system", "user": "user", "assistant": "assistant", "tool": "tool", "model": "assistant"}),
             tools=[duckdb_tools, PandasTools()],
             system_message="You are an expert data analyst. Use the 'uploaded_data' table to answer user queries. Generate SQL queries using DuckDB tools to solve the user's query. Provide clear and concise answers with the results.",
             markdown=True,
@@ -105,14 +111,18 @@ if uploaded_file is not None and "openai_key" in st.session_state:
                 st.warning("Please enter a query.")
             else:
                 try:
+                    logger.info("Starting query processing...")
                     # Show loading spinner while processing
                     with st.spinner('Processing your query...'):
                         # Get the response from the agent
+                        logger.info(f"Sending query to agent: {user_query}")
                         response = data_analyst_agent.run(user_query)
+                        logger.info(f"Agent response received: {type(response)}")
 
                         # Extract the content from the response object
                         if hasattr(response, 'content'):
                             response_content = response.content
+                            logger.info(f"Response content length: {len(response_content)}")
                         else:
                             response_content = str(response)
 
@@ -121,5 +131,6 @@ if uploaded_file is not None and "openai_key" in st.session_state:
                 
                     
                 except Exception as e:
+                    logger.error(f"Error occurred: {e}", exc_info=True)
                     st.error(f"Error generating response from the agent: {e}")
                     st.error("Please try rephrasing your query or check if the data format is correct.")
